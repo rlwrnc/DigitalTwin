@@ -21,10 +21,16 @@ void UPrinterNetworkCommunicator::BeginPlay()
 
 	// ...
 
+	// initialize temperature text
 	TemperatureText = this->GetOwner()->FindComponentByClass<UTextRenderComponent>();
-	toolTemp = 0.0f, headTemp = 0.0f;
-	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.1f\nHead: %2.1f"), toolTemp, headTemp)));
+	toolTemp = 0.0f, bedTemp = 0.0f;
+	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.1f°\nBed: %2.1f°"), toolTemp, bedTemp)));
 
+	// timer setup
+	GetWorld()->GetTimerManager().SetTimer(TemperatureHandle, this, &UPrinterNetworkCommunicator::PollTemperature, 1.0f, true, 0.0f);
+
+	// temporary http stuff, will be moved to case-specific functions
+	/*
 	FHttpRequestPtr request = FHttpModule::Get().CreateRequest();
 	
 	TSharedRef<FJsonObject> requestObj = MakeShared<FJsonObject>();
@@ -40,10 +46,11 @@ void UPrinterNetworkCommunicator::BeginPlay()
 	request->OnProcessRequestComplete().BindUObject(this, &UPrinterNetworkCommunicator::OnResponseReceived);
 	request->SetURL(FString("http://192.168.1.101/api/printer/printhead"));
 	request->SetVerb(FString("POST"));
-	request->SetHeader(FString("X-Api-Key"), FString("CA29191915284A00A0207FB0213F0275"));
+	request->SetHeader(FString("X-Api-Key"), FString("CA29191915284A00A0207FB0213F0275"));	// KEEPING API KEY IN SOURCE IS BAD, NEED TO FIND BETTER SOLUTION
 	request->AppendToHeader(FString("Content-Type"), FString("application/json"));
 	request->SetContentAsString(requestBody);
 	request->ProcessRequest();
+	*/
 }
 
 /*
@@ -55,17 +62,40 @@ void UPrinterNetworkCommunicator::BeginPlay()
 void UPrinterNetworkCommunicator::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.1f\nHead: %2.1f"), toolTemp, headTemp)));
 	// ...
 	
+}
+
+/**
+* @brief creates and sends http get request for temperature, updates printer text
+*/
+void UPrinterNetworkCommunicator::PollTemperature()
+{
+	// create/send http get request
+	FHttpRequestPtr request = FHttpModule::Get().CreateRequest();
+	request->OnProcessRequestComplete().BindUObject(this, &UPrinterNetworkCommunicator::OnResponseReceived);
+	request->SetURL("http://192.168.1.101/api/printer");
+	request->SetVerb("GET");
+	request->SetHeader(FString("X-Api-Key"), FString("CA29191915284A00A0207FB0213F0275"));
+	request->ProcessRequest();
+
+	//update temperature text
+	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.1f°\nBed: %2.1f°"), toolTemp, bedTemp)));
 }
 
 void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool success)
 {
 	FString requestVerb = *request->GetVerb();
 	if (requestVerb.Equals("GET")) {
-		UE_LOG(LogTemp, Display, TEXT("HTTP Response: %s"), *response->GetContentAsString());
-
+		//UE_LOG(LogTemp, Display, TEXT("HTTP Response: %s"), *response->GetContentAsString());
+		// parse temperature
+		TSharedPtr<FJsonObject> responseObj;
+		TSharedRef<TJsonReader<>> reader = TJsonReaderFactory<>::Create(response->GetContentAsString());
+		FJsonSerializer::Deserialize(reader, responseObj);
+		TSharedPtr<FJsonObject> tempObj = responseObj->GetObjectField("temperature");
+		
+		toolTemp = tempObj->GetObjectField("tool0")->GetNumberField("actual");
+		bedTemp = tempObj->GetObjectField("bed")->GetNumberField("actual");
 	}
 }
 

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include <string>
+#include "TimerManager.h"
 #include "Components/ActorComponent.h"
 #include "HTTP.h"
 #include "Json.h"
@@ -22,11 +23,12 @@ public:
 
 protected:
 	UTextRenderComponent *TemperatureText;
-	double toolTemp, headTemp;
+	double toolTemp, bedTemp;
+	FTimerHandle TemperatureHandle;
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	
+	void PollTemperature();
 	void UpdateTemperatureText();
 
 public:	
