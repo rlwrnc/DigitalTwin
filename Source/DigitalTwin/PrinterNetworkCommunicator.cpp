@@ -20,8 +20,13 @@ void UPrinterNetworkCommunicator::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	FHttpRequestPtr request = FHttpModule::Get().CreateRequest();
 
+	TemperatureText = this->GetOwner()->FindComponentByClass<UTextRenderComponent>();
+	toolTemp = 0.0f, headTemp = 0.0f;
+	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.1f\nHead: %2.1f"), toolTemp, headTemp)));
+
+	FHttpRequestPtr request = FHttpModule::Get().CreateRequest();
+	
 	TSharedRef<FJsonObject> requestObj = MakeShared<FJsonObject>();
 	requestObj->SetStringField(FString("command"), FString("jog"));
 	requestObj->SetNumberField(FString("x"), 10);
@@ -41,16 +46,30 @@ void UPrinterNetworkCommunicator::BeginPlay()
 	request->ProcessRequest();
 }
 
+/*
+ * TODO:
+ * - variadic function for response body (needs to be variadic because we will have more than one printer?
+*/
 
 // Called every frame
 void UPrinterNetworkCommunicator::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.1f\nHead: %2.1f"), toolTemp, headTemp)));
 	// ...
+	
 }
 
 void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool success)
 {
-	UE_LOG(LogTemp, Display, TEXT("HTTP Response: %s"), *response->GetContentAsString());
+	FString requestVerb = *request->GetVerb();
+	if (requestVerb.Equals("GET")) {
+		UE_LOG(LogTemp, Display, TEXT("HTTP Response: %s"), *response->GetContentAsString());
+
+	}
+}
+
+void UPrinterNetworkCommunicator::UpdateTemperatureText()
+{
+
 }

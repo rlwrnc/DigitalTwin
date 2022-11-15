@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include <string>
 #include "Components/ActorComponent.h"
 #include "HTTP.h"
 #include "Json.h"
+#include "Components/TextRenderComponent.h"
 #include "PrinterNetworkCommunicator.generated.h"
 
 
@@ -19,8 +21,13 @@ public:
 	UPrinterNetworkCommunicator();
 
 protected:
+	UTextRenderComponent *TemperatureText;
+	double toolTemp, headTemp;
+
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	void UpdateTemperatureText();
 
 public:	
 	// Called every frame
