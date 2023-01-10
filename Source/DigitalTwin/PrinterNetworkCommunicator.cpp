@@ -24,7 +24,7 @@ void UPrinterNetworkCommunicator::BeginPlay()
 	// initialize temperature text
 	TemperatureText = this->GetOwner()->FindComponentByClass<UTextRenderComponent>();
 	toolTemp = 0.0f, bedTemp = 0.0f;
-	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.1f°\nBed: %2.1f°"), toolTemp, bedTemp)));
+	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.2f°\nBed: %2.2f°"), toolTemp, bedTemp)));
 
 	// timer setup
 	GetWorld()->GetTimerManager().SetTimer(TemperatureHandle, this, &UPrinterNetworkCommunicator::PollTemperature, 1.0f, true, 0.0f);
@@ -80,7 +80,7 @@ void UPrinterNetworkCommunicator::PollTemperature()
 	request->ProcessRequest();
 
 	//update temperature text
-	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.1f°\nBed: %2.1f°"), toolTemp, bedTemp)));
+	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Head: %2.2f°\nBed: %2.2f°"), toolTemp, bedTemp)));
 }
 
 void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool success)
