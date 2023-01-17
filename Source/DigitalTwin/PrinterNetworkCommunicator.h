@@ -22,7 +22,9 @@ public:
 	UPrinterNetworkCommunicator();
 
 protected:
-	UTextRenderComponent *TemperatureText;
+	UTextRenderComponent* TemperatureText;
+	AActor xAxis, yAxis, zAxis;
+	bool isRunningJob;
 	double toolTemp, bedTemp;
 	FTimerHandle TemperatureHandle;
 
@@ -35,5 +37,4 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void OnResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool success);
-		
 };
