@@ -20,6 +20,7 @@ class DIGITALTWIN_API UPrinterNetworkCommunicator : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UPrinterNetworkCommunicator();
+	~UPrinterNetworkCommunicator();
 
 protected:
 	UTextRenderComponent *TemperatureText;
@@ -30,6 +31,7 @@ protected:
 	virtual void BeginPlay() override;
 	void PollTemperature();
 	void UpdateTemperatureText();
+	void WriteTemperature();
 
 public:	
 	// Called every frame

@@ -9,10 +9,12 @@ UPrinterNetworkCommunicator::UPrinterNetworkCommunicator()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
 	// ...
 }
 
+UPrinterNetworkCommunicator::~UPrinterNetworkCommunicator()
+{
+}
 
 // Called when the game starts
 void UPrinterNetworkCommunicator::BeginPlay()
@@ -81,6 +83,7 @@ void UPrinterNetworkCommunicator::PollTemperature()
 
 	//update temperature text
 	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Head: %2.2f°\nBed: %2.2f°"), toolTemp, bedTemp)));
+	WriteTemperature();
 }
 
 void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool success)
@@ -90,6 +93,7 @@ void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FH
 		//UE_LOG(LogTemp, Display, TEXT("HTTP Response: %s"), *response->GetContentAsString());
 		// parse temperature
 		TSharedPtr<FJsonObject> responseObj;
+
 		TSharedRef<TJsonReader<>> reader = TJsonReaderFactory<>::Create(response->GetContentAsString());
 		FJsonSerializer::Deserialize(reader, responseObj);
 		TSharedPtr<FJsonObject> tempObj = responseObj->GetObjectField("temperature");
@@ -102,4 +106,19 @@ void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FH
 void UPrinterNetworkCommunicator::UpdateTemperatureText()
 {
 
+}
+
+void UPrinterNetworkCommunicator::WriteTemperature()
+{
+	FString file = FPaths::ProjectDir().Append("data.csv");
+	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+	FString writeString = FString::Printf(TEXT("%lf,%lf\n"), toolTemp, bedTemp);
+	if (FileManager.FileExists(*file))
+		FFileHelper::SaveStringToFile(
+			writeString,
+			*file, 
+			FFileHelper::EEncodingOptions::AutoDetect,	// default value
+			&IFileManager::Get(),						// default value
+			EFileWrite::FILEWRITE_Append
+		);
 }
