@@ -86,7 +86,6 @@ void UPrinterNetworkCommunicator::PollTemperature()
 void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FHttpResponsePtr response, bool success)
 {
 	FString requestVerb = *request->GetVerb();
-	
 	if (requestVerb.Equals("GET")) {
 		//UE_LOG(LogTemp, Display, TEXT("HTTP Response: %s"), *response->GetContentAsString());
 		// parse temperature
@@ -97,10 +96,6 @@ void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FH
 		
 		toolTemp = tempObj->GetObjectField("tool0")->GetNumberField("actual");
 		bedTemp = tempObj->GetObjectField("bed")->GetNumberField("actual");
-	}
-
-	if (requestVerb.Equals("POST")) {
-
 	}
 }
 
