@@ -10,16 +10,7 @@ UPrinterNetworkCommunicator::UPrinterNetworkCommunicator()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// reference to temperature text renderer
-	TemperatureText = this->GetOwner()->FindComponentByClass<UTextRenderComponent>();
-
-	isRunningJob = false;
-	
-	toolTemp = 0.0f, bedTemp = 0.0f;
-
-	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.2f°\nBed: %2.2f°"), toolTemp, bedTemp)));
-
-
+	// ...
 }
 
 
@@ -28,14 +19,44 @@ void UPrinterNetworkCommunicator::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TArray<AActor*> attachedActors;
-	GetOwner()->GetAttachedActors(attachedActors);
-	UE_LOG(LogTemp, Warning, TEXT("GetAttachedActors[0] name: %s"), attachedActors[0]);
+	// ...
 
-	// calls PollTemperature every once a second
+	// initialize temperature text
+	TemperatureText = this->GetOwner()->FindComponentByClass<UTextRenderComponent>();
+	toolTemp = 0.0f, bedTemp = 0.0f;
+	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.2f°\nBed: %2.2f°"), toolTemp, bedTemp)));
+
+	// timer setup
 	GetWorld()->GetTimerManager().SetTimer(TemperatureHandle, this, &UPrinterNetworkCommunicator::PollTemperature, 1.0f, true, 0.0f);
 
+	// temporary http stuff, will be moved to case-specific functions
+	/*
+	FHttpRequestPtr request = FHttpModule::Get().CreateRequest();
+	
+	TSharedRef<FJsonObject> requestObj = MakeShared<FJsonObject>();
+	requestObj->SetStringField(FString("command"), FString("jog"));
+	requestObj->SetNumberField(FString("x"), 10);
+	requestObj->SetNumberField(FString("y"), -5);
+	requestObj->SetNumberField(FString("z"), 0.02);
+
+	FString requestBody;
+	TSharedRef<TJsonWriter<>> writer = TJsonWriterFactory<>::Create(&requestBody);
+	FJsonSerializer::Serialize(requestObj, writer);
+
+	request->OnProcessRequestComplete().BindUObject(this, &UPrinterNetworkCommunicator::OnResponseReceived);
+	request->SetURL(FString("http://192.168.1.101/api/printer/printhead"));
+	request->SetVerb(FString("POST"));
+	request->SetHeader(FString("X-Api-Key"), FString("CA29191915284A00A0207FB0213F0275"));	// KEEPING API KEY IN SOURCE IS BAD, NEED TO FIND BETTER SOLUTION
+	request->AppendToHeader(FString("Content-Type"), FString("application/json"));
+	request->SetContentAsString(requestBody);
+	request->ProcessRequest();
+	*/
 }
+
+/*
+ * TODO:
+ * - variadic function for response body (needs to be variadic because we will have more than one printer?
+*/
 
 // Called every frame
 void UPrinterNetworkCommunicator::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
