@@ -26,6 +26,10 @@ protected:
 	UTextRenderComponent *TemperatureText;
 	double toolTemp, bedTemp;
 	FTimerHandle TemperatureHandle;
+	UPROPERTY(EditInstanceOnly)
+		FString BaseURL;
+	UPROPERTY(EditInstanceOnly)
+		FString APIKey;
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
