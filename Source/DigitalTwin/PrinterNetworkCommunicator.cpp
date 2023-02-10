@@ -82,11 +82,6 @@ void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FH
 	}
 }
 
-void UPrinterNetworkCommunicator::UpdateTemperatureText()
-{
-
-}
-
 void UPrinterNetworkCommunicator::WriteTemperature()
 {
 	FString file = FPaths::ProjectDir().Append("data.csv");
