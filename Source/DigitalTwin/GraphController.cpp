@@ -17,11 +17,16 @@ UGraphController::UGraphController()
 void UGraphController::BeginPlay()
 {
 	Super::BeginPlay();
-	AGraphPoint* gp;
 	// ...
-	FActorSpawnParameters params;
-	auto SpawnTransform = this->GetOwner()->GetTransform();
-	gp = GetWorld()->SpawnActor<AGraphPoint>(AGraphPoint::StaticClass(), SpawnTransform);
+	startLocation = this->GetOwner()->GetTransform();
+	// y=485 to allow for 32 plotted points at current size
+	// we can probably do better, but this is a bit of a hack job anyhows
+	startLocation.AddToTranslation(FVector(0.0f, 485.0f, 0.0f));
+
+	auto aClass = AGraphPoint::StaticClass();
+	auto gp = GetWorld()->SpawnActorDeferred<AGraphPoint>(AGraphPoint::StaticClass(), startLocation);
+	gp->SetMesh(TEXT("/Game/Materials/Floor.Floor"));
+	gp->FinishSpawning(startLocation);
 }
 
 

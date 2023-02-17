@@ -22,10 +22,9 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	UPROPERTY(EditDefaultsOnly, Category = "Point Actor")
-		TSubclassOf<AActor> pointActor;
 	TQueue<int32> plottedPoints;
 	FTransform startLocation;
+	float endY;
 
 public:	
 	// Called every frame
