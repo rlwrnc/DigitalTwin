@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "GraphPoint.h"
 #include "GraphController.generated.h"
-
-#define MAX_POINTS 32
 
 /*
 	32 total x points spaced 15 units apart can be graphed.
@@ -20,12 +19,13 @@ class DIGITALTWIN_API UGraphController : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UGraphController();
-
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	int plottedPoints[MAX_POINTS];		// will be an array of actors (the plotted points)
-	int spawnLocation;					// will be a transform
+	UPROPERTY(EditDefaultsOnly, Category = "Point Actor")
+		TSubclassOf<AActor> pointActor;
+	TQueue<int32> plottedPoints;
+	FTransform startLocation;
 
 public:	
 	// Called every frame
