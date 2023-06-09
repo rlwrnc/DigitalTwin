@@ -8,7 +8,7 @@ UPrinterNetworkCommunicator::UPrinterNetworkCommunicator()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 	// ...
 }
 
@@ -22,14 +22,16 @@ void UPrinterNetworkCommunicator::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+	
+	if (Enabled) {
+		// initialize temperature text
+		TemperatureText = this->GetOwner()->FindComponentByClass<UTextRenderComponent>();
+		toolTemp = 0.0f, bedTemp = 0.0f;
+		TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.2f°\nBed: %2.2f°"), toolTemp, bedTemp)));
 
-	// initialize temperature text
-	TemperatureText = this->GetOwner()->FindComponentByClass<UTextRenderComponent>();
-	toolTemp = 0.0f, bedTemp = 0.0f;
-	TemperatureText->SetText(FText::FromString(FString::Printf(TEXT("Tool: %2.2f°\nBed: %2.2f°"), toolTemp, bedTemp)));
-
-	// timer setup
-	GetWorld()->GetTimerManager().SetTimer(TemperatureHandle, this, &UPrinterNetworkCommunicator::PollTemperature, 1.0f, true, 0.0f);
+		// timer setup
+		GetWorld()->GetTimerManager().SetTimer(TemperatureHandle, this, &UPrinterNetworkCommunicator::PollTemperature, 1.0f, true, 0.0f);
+	}
 }
 
 /*
@@ -74,6 +76,9 @@ void UPrinterNetworkCommunicator::OnResponseReceived(FHttpRequestPtr request, FH
 
 		TSharedRef<TJsonReader<>> reader = TJsonReaderFactory<>::Create(response->GetContentAsString());
 		FJsonSerializer::Deserialize(reader, responseObj);
+
+		// TODO: look into temperature query causing assertion fail
+		// appears to be relaetd to the "temperature" object field not existing
 		TSharedPtr<FJsonObject> tempObj = responseObj->GetObjectField("temperature");
 		
 		toolTemp = tempObj->GetObjectField("tool0")->GetNumberField("actual");

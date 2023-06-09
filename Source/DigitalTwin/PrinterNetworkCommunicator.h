@@ -30,6 +30,8 @@ protected:
 		FString BaseURL;
 	UPROPERTY(EditInstanceOnly)
 		FString APIKey;
+	UPROPERTY(EditInstanceOnly)
+		bool Enabled;
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
